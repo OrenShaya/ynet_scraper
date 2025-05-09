@@ -27,29 +27,53 @@ def scrape_ynet_articles(urls: List[str]) -> List[ArticleData]:
     """
     articles_list: List[ArticleData] = []
     for link in urls:
-        r = requests.get(link)
-        soup = BeautifulSoup(r.content, 'html5lib')
+        try:
+            r = requests.get(link)
+            soup = BeautifulSoup(r.content, 'html5lib')
+        except:
+            print("Error getting url")
 
-        title: str = soup.find("h1", "mainTitle").text
-        # print(title)
+        try:
+            title: str = soup.find("h1", "mainTitle").text
+            # print(title)
+        except AttributeError:
+            print("main title was not found")
+            title = "Unknown title"
 
         author_div = soup.find("div", "authors")
-        author: str = author_div.find("span").text  # there are more than one span, the author is the first
-        # print(author)
+        try:
+            # The first span seem to always be the author
+            author: str = author_div.find("span").text
+            # print(author)
+        except AttributeError:
+            print("error finding the author")
+            author = "Unknown author"
 
-        full_date: str = author_div.find("time", "DateDisplay")["datetime"]
-        date_obj: datetime = datetime.strptime(full_date, "%Y-%m-%dT%H:%M:%S.%fZ")
-        # print(date_obj)
+        try:
+            full_date: str = author_div.find("time", "DateDisplay")["datetime"]
+            date_obj: datetime = datetime.strptime(full_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # print(date_obj)
+        except TypeError:
+            print("error finding date\ninserting today's date instead")
+            date_obj: datetime = datetime.now()
 
-        full_article = soup.find_all("div", attrs={"class": "text_editor_paragraph rtl"})
-        full_article_text: List[str] = [article.text for article in full_article]
-        full_article_text: str = '\n\n'.join(full_article_text)
-        # print(full_article_text)
+        try:
+            full_article = soup.find_all("div", attrs={"class": "text_editor_paragraph rtl"})
+            full_article_text: List[str] = [article.text for article in full_article]
+            full_article_text: str = '\n\n'.join(full_article_text)
+            # print(full_article_text)
+        except TypeError:
+            print("error getting article text")
+            full_article_text: str = "Failed to get text"
 
-        full_article = soup.find("div", {"data-contents": "true"})
-        images_parent_div = full_article.find_all("a", {"class": "gelleryOpener"})
-        images = [img.find("img")["src"] for img in images_parent_div]
-        # print(images)
+        try:
+            full_article = soup.find("div", {"data-contents": "true"})
+            images_parent_div = full_article.find_all("a", {"class": "gelleryOpener"})
+            images = [img.find("img")["src"] for img in images_parent_div]
+            # print(images)
+        except AttributeError:
+            print("error getting images")
+            images = []
 
         article = ArticleData(title=title, author=author, publication_date=date_obj, content=full_article_text, image_urls=images)
         articles_list.append(article)

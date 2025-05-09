@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
-import re
 
 @dataclass
 class ArticleData:
@@ -12,6 +11,12 @@ class ArticleData:
     publication_date: Optional[datetime]
     content: str
     image_urls: List[str]
+
+    def __repr__(self):
+        return (f"Title: {self.title}\n"
+                f"Author: {self.author}\nPublished date: {self.publication_date}\n"
+                f"The article has {len(self.image_urls)} images\n"
+                f"The article has {len(self.content.split(' '))} words\n")
 
 def scrape_ynet_articles(urls: List[str]) -> List[ArticleData]:
     """
@@ -26,7 +31,7 @@ def scrape_ynet_articles(urls: List[str]) -> List[ArticleData]:
         soup = BeautifulSoup(r.content, 'html5lib')
 
         title: str = soup.find("h1", "mainTitle").text
-        print(title)
+        # print(title)
 
         author_div = soup.find("div", "authors")
         author: str = author_div.find("span").text  # there are more than one span, the author is the first
@@ -57,4 +62,5 @@ urls = [
     "https://www.ynet.co.il/news/article/syot2cfxee",
     "https://www.ynet.co.il/news/article/s11f6etgxl",
 ]
-scrape_ynet_articles(urls)
+
+print(scrape_ynet_articles(urls))

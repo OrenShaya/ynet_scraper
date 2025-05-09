@@ -24,6 +24,7 @@ def scrape_ynet_articles(urls: List[str]) -> List[ArticleData]:
     for link in urls:
         r = requests.get(link)
         soup = BeautifulSoup(r.content, 'html5lib')
+
         title: str = soup.find("h1", "mainTitle").text
         print(title)
 
@@ -46,8 +47,8 @@ def scrape_ynet_articles(urls: List[str]) -> List[ArticleData]:
         # print(images)
 
         article = ArticleData(title=title, author=author, publication_date=date_obj, content=full_article_text, image_urls=images)
-        # print(article)
         articles_list.append(article)
+        # print(article)
     return articles_list
 
 urls = [
